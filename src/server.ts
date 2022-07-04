@@ -3,6 +3,7 @@ import config from './config';
 import databaseConnect from './database';
 import home from './api/routes/home';
 import errorHandler from './api/middlewares/error-handler';
+require("express-async-errors");
 
 const app = express();
 
