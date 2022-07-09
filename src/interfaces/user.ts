@@ -7,4 +7,5 @@ export interface IUser {
     password: string;
     verifyToken?: string;
     verified?: boolean
+    habits?: string[]
 }

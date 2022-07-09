@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
+import HabitService from "../../services/habit";
 import UserService from "../../services/user";
 
 class UserController {
     public userService: UserService
+    public habitService: HabitService
 
-    constructor(userService = new UserService()) {
+    constructor(userService = new UserService(), habitService = new HabitService()) {
         this.userService = userService
+        this.habitService = habitService
     }
 
     createUser = async (req: Request, res: Response) => {
@@ -29,6 +32,13 @@ class UserController {
     refresh = async (req: Request, res: Response) => {
         const { refresh_token } = req.body
         const result = await this.userService.refresh(refresh_token)
+        return res.status(200).json(result)
+    }
+
+    mark = async (req: Request, res: Response) => {
+        const { data_timestamp } = req.body
+        const { id } = req.params
+        const result = await this.habitService.markComplete(id, req.user.user_id, data_timestamp)
         return res.status(200).json(result)
     }
 }

@@ -8,7 +8,11 @@ const userSchema = new Schema<IUser>({
     avatar: String,
     password: { type: String, required: true },
     verifyToken: { type: String, required: true },
-    verified: { type: Boolean, default: false }
+    verified: { type: Boolean, default: false },
+    habits: [{
+        type: Schema.Types.ObjectId,
+        ref: "Habit",
+    }]
 });
 
 const User = model<IUser>("User", userSchema);

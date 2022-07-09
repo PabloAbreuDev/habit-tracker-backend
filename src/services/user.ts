@@ -12,7 +12,10 @@ import jwt from "jsonwebtoken";
 import config from "../config";
 
 class UserService {
-    public user = User;
+    public user: typeof User;
+    constructor(user = User) {
+        this.user = user
+    }
 
     // Cria um usuário
     async create(user: IUser) {
@@ -30,15 +33,6 @@ class UserService {
             // TODO: Adicionar evento de e-mail
             console.log("E-mail event");
 
-            // const email = new MailService({
-            //     from: "me",
-            //     to: user.email,
-            //     subject: "E-mail de verificação",
-            //     text: "aaaa",
-            //     type: "verify",
-            // })
-
-            // email.sendMail('VERIFY');
 
             return { result };
         } catch (err) {
@@ -81,5 +75,7 @@ class UserService {
         }
         return { access_token: tokenGenerate({ user_id: decoded.user_id }) };
     }
+
+
 }
 export default UserService;
