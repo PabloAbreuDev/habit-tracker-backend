@@ -18,6 +18,12 @@ class HabitController {
 
         return res.status(201).json(result);
     };
+
+    delete = async (req: Request, res: Response) => {
+        const { id } = req.params
+        const result = await this.habitService.deleteHabit(id, req.user.user_id)
+        return res.status(200).json(result);
+    }
 }
 
 export default HabitController;

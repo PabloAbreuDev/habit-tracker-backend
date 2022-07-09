@@ -21,7 +21,6 @@ class HabitService {
 
     // Marca um dia como concluído
     async markComplete(habit: string, user_id: string, day: number) {
-        console.log({ habit, user_id, day })
         try {
             const result = await this.habit.findOneAndUpdate({ _id: habit, owner: user_id }, { $push: { completeDays: day } }, { new: true });
             return { result };
@@ -30,6 +29,16 @@ class HabitService {
         }
     }
 
+    // Delete a habit
+    async deleteHabit(habit: string, user_id: string) {
+        try {
+            await this.habit.deleteOne({ _id: habit, owner: user_id })
+            await this.user.findOneAndUpdate({ _id: user_id }, { $pull: { habits: habit } })
+            return "Deletado com sucesso"
+        } catch (err) {
+            throw new CustomError("Houve um erro ao deletar o hábito!", 400);
+        }
+    }
 }
 
 export default HabitService
