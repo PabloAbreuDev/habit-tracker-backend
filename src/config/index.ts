@@ -18,7 +18,8 @@ export default {
         smtp_pass: process.env.SMTP_PASS,
     },
     jwt: {
-        jwt_secret: process.env.JWT_SECRET,
+        jwt_secret: process.env.JWT_SECRET || '123',
         jwt_expire: process.env.JWT_EXPIRE,
+        jwt_refresh_expire: process.env.JWT_REFRESH_EXPIRE
     },
 };

@@ -1,37 +1,55 @@
 import { IUser } from "../interfaces/user";
 import User from "../models/user";
-import MailService from "./mail";
 import bcrypt from "bcrypt";
+import { CustomError } from "../api/middlewares/error-handler";
+import {
+    hashGenerate,
+    refreshTokenGenerate,
+    tokenGenerate,
+} from "../utils/generators";
+import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import config from "../config";
-import { CustomError } from "../api/middlewares/error-handler";
 
 class UserService {
-
     public user = User;
 
     // Cria um usuário
     async create(user: IUser) {
-        try {
-            const result = await this.user.create(user)
+        const user_exists = await this.user.findOne({ email: user.email });
 
-            new MailService({
-                from: "me",
-                to: "other than me",
-                subject: "create account",
-                text: "aaaa",
-                type: "verify",
-            }).sendMail('VERIFY');
+        if (user_exists) {
+            throw new CustomError("Este email já está em uso", 400);
+        }
+
+        try {
+            user.verifyToken = uuidv4();
+            user.password = hashGenerate(user.password);
+            const result = await this.user.create(user);
+
+            // TODO: Adicionar evento de e-mail
+            console.log("E-mail event");
+
+            // const email = new MailService({
+            //     from: "me",
+            //     to: user.email,
+            //     subject: "E-mail de verificação",
+            //     text: "aaaa",
+            //     type: "verify",
+            // })
+
+            // email.sendMail('VERIFY');
 
             return { result };
         } catch (err) {
+            console.log(err);
             throw new CustomError("Não foi possível criar o usuario", 400);
         }
     }
 
     // Realiza login na aplicação
     async login(email: string, password: string) {
-        const user = await this.user.findOne({ email })
+        const user = await this.user.findOne({ email });
 
         if (!user) {
             throw new CustomError("E-mail ou senha incorretos!", 400);
@@ -42,27 +60,26 @@ class UserService {
         if (!match) {
             throw new CustomError("E-mail ou senha incorretos!", 400);
         }
-
-        const token = jwt.sign(
-            { user_id: user._id },
-            config.jwt.jwt_secret || "12345",
-            {
-                expiresIn: config.jwt.jwt_expire,
-            }
-        );
-
-        return { token }
-
+        return {
+            access_token: tokenGenerate({ user_id: user._id }),
+            refresh_token: refreshTokenGenerate({ user_id: user._id }),
+        };
     }
 
-    // Atualiza um cliente
-    async update(schema: IUser, id: string) {
-        try {
-            const result = await User.updateOne({ _id: id }, schema)
-            return { result }
-        } catch (err) {
-            throw new CustomError("Não foi possível atualizar o usuario", 400);
+    // Recupera minhas informações
+    async me(id: string) {
+        return await this.user
+            .findOne({ _id: id })
+            .select("-password -verified -verifyToken");
+    }
+
+    // Recupera um token com base no refresh
+    async refresh(refresh_token: string) {
+        const decoded: any = jwt.verify(refresh_token, config.jwt.jwt_secret)
+        if (!decoded) {
+            throw new CustomError("Não autorizado!", 406);
         }
+        return { access_token: tokenGenerate({ user_id: decoded.user_id }) };
     }
 }
-export default UserService
+export default UserService;

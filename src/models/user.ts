@@ -7,6 +7,8 @@ const userSchema = new Schema<IUser>({
     email: { type: String, required: true, unique: true },
     avatar: String,
     password: { type: String, required: true },
+    verifyToken: { type: String, required: true },
+    verified: { type: Boolean, default: false }
 });
 
 const User = model<IUser>("User", userSchema);
