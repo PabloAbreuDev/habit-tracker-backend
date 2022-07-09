@@ -1,21 +1,11 @@
 import express from 'express'
 import config from './config';
-import databaseConnect from './database';
-import home from './api/routes/home';
-import errorHandler from './api/middlewares/error-handler';
-require("express-async-errors");
+import startModules from './loaders';
+
 
 const app = express();
 
-app.use(express.json())
-
-// Routes
-app.use(home)
-
-// Error handler
-app.use(errorHandler)
-
 // Inicializa a aplicação
-app.listen(config.port, () => {
-    databaseConnect()
+app.listen(config.port, async () => {
+    await startModules({ app })
 })

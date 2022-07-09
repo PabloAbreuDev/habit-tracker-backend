@@ -6,11 +6,9 @@ import jwt from "jsonwebtoken";
 import config from "../config";
 import { CustomError } from "../api/middlewares/error-handler";
 
-export default class UserService {
-    private user
-    constructor(user: any) {
-        this.user = User
-    }
+class UserService {
+
+    public user = User;
 
     // Cria um usuário
     async create(user: IUser) {
@@ -36,7 +34,7 @@ export default class UserService {
         const user = await this.user.findOne({ email })
 
         if (!user) {
-            throw Error("E-mail ou senha incorretos!");
+            throw new CustomError("E-mail ou senha incorretos!", 400);
         }
 
         const match = await bcrypt.compare(password, user.password);
@@ -60,10 +58,11 @@ export default class UserService {
     // Atualiza um cliente
     async update(schema: IUser, id: string) {
         try {
-            const result = await this.user.updateOne({ _id: id }, schema)
+            const result = await User.updateOne({ _id: id }, schema)
             return { result }
         } catch (err) {
             throw new CustomError("Não foi possível atualizar o usuario", 400);
         }
     }
 }
+export default UserService
